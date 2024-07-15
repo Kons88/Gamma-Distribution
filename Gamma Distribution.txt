@@ -1,0 +1,47 @@
+#///////////////////////////////////////////////////////
+# Gamma Distribution MLE for shape and scale paramters
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+# Insert the data as a vector
+dat <- scan(file="C:\\Users\\30697\\Desktop\\whales.txt")
+
+#================================
+# Gamma, negative log-likelihood
+#================================
+logl <- function(thet,dat){
+ #gamma minus log-likelihood
+ n <- length(dat)
+ a <- thet[1]; b <- thet[2]
+ -(n*a*log(b)-n*lgamma(a)+(a-1)*sum(log(dat))-b*sum(dat))
+}
+
+#=========================================
+# Maximum Likelihood using Newton-Rhapson
+#=========================================
+# Load the library (numDeriv)
+library(numDeriv)
+
+# Initial Values
+thet0 <- c(1, 1)
+iter <- 0
+eps <- 1
+
+# Maximum Likelihood Estimation
+while (eps > 1e-6){
+ iter <- iter + 1
+ gradient <- grad(logl, x=thet0, dat=dat)
+ hess <- hessian(logl, x=thet0, dat=dat)
+ thet <- thet0 - solve(hess)%*%gradient
+ thet <- as.vector(thet)
+ eps <- sum(abs(thet-thet0))
+ thet0 <- thet
+}
+
+thet
+iter
+
+#=========================================
+# Maximum Likelihood using optim()
+#=========================================
+fit <- optim(par=c(1,1), logl, method='BFGS', dat=dat, hessian=TRUE)
+fit
